@@ -60,7 +60,7 @@ def diagnose_datasource(self, datasource_name):
         # Verify data source type
         print("\n4. Data Source Type Check:")
         datasource_type = datasource.get('type')
-        valid_types = ['azureblob', 'azuretable', 'azuresql', 'cosmosdb']
+        valid_types = ['azureblob', 'azuretable', 'azuresql', 'cosmosdb', 'adlsgen2']
         if not datasource_type:
             print("❌ Data source type is missing")
         elif datasource_type.lower() not in valid_types:
@@ -72,7 +72,48 @@ def diagnose_datasource(self, datasource_name):
         print("\n5. Connectivity Test:")
         try:
             # This will vary depending on your data source type
-            if datasource_type.lower() == 'azureblob':
+            if datasource_type.lower() == 'adlsgen2':
+                from azure.storage.filedatalake import DataLakeServiceClient
+                try:
+                    # Parse connection string for ADLS Gen2
+                    service_client = DataLakeServiceClient.from_connection_string(connection_string)
+                    
+                    # Get file system client (container in ADLS Gen2 is called a file system)
+                    file_system_client = service_client.get_file_system_client(container.get('name'))
+                    
+                    # Try to list some paths to verify access
+                    paths = next(file_system_client.get_paths(max_results=1), None)
+                    print("✓ Successfully connected to ADLS Gen2 file system")
+                    
+                    # Additional ADLS Gen2 specific checks
+                    print("\n7. ADLS Gen2 Specific Checks:")
+                    
+                    # Check if using managed identity
+                    if 'managed_identity' in datasource.get('credentials', {}):
+                        print("✓ Using managed identity authentication")
+                    elif connection_string:
+                        print("✓ Using connection string authentication")
+                    else:
+                        print("❌ Neither managed identity nor connection string specified")
+                    
+                    # Check hierarchical namespace
+                    try:
+                        account_info = service_client.get_account_information()
+                        if account_info.get('isHierarchicalNamespaceEnabled'):
+                            print("✓ Hierarchical namespace is enabled (required for ADLS Gen2)")
+                        else:
+                            print("❌ Hierarchical namespace is not enabled")
+                    except:
+                        print("ℹ Could not verify hierarchical namespace status")
+                        
+                except Exception as adls_e:
+                    print(f"❌ ADLS Gen2 connectivity test failed: {str(adls_e)}")
+                    print("Common ADLS Gen2 issues to check:")
+                    print("  - Ensure the storage account has hierarchical namespace enabled")
+                    print("  - Verify the connection string or managed identity has proper RBAC roles")
+                    print("  - Common required roles: Storage Blob Data Reader, Storage Blob Data Contributor")
+                    
+            elif datasource_type.lower() == 'azureblob':
                 from azure.storage.blob import BlobServiceClient
                 blob_service = BlobServiceClient.from_connection_string(connection_string)
                 container_client = blob_service.get_container_client(container.get('name'))
@@ -101,7 +142,6 @@ def diagnose_datasource(self, datasource_name):
             except:
                 print(f"Raw error response: {e.response.text}")
         raise
-
 
 
 
