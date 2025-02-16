@@ -115,3 +115,108 @@ simple_payload = {
         }
     ]
 }
+
+
+
+def create_indexer(self, name, datasource_name, index_name):
+    url = f"{self.endpoint}/indexers/{name}?api-version={self.api_version}"
+    
+    simple_payload = {
+        "name": name,
+        "dataSourceName": datasource_name,
+        "targetIndexName": index_name,
+        "fieldMappings": [
+            {
+                "sourceFieldName": "id",
+                "targetFieldName": "id"
+            }
+        ]
+    }
+    
+    # Create a session with specific configurations
+    session = requests.Session()
+    
+    # Configure the session
+    adapter = requests.adapters.HTTPAdapter(
+        max_retries=3,
+        pool_connections=1,
+        pool_maxsize=1
+    )
+    session.mount('https://', adapter)
+    
+    try:
+        # Use session with specific configurations
+        response = session.put(
+            url,
+            headers=self.headers,
+            json=simple_payload,
+            timeout=30,
+            verify=True,
+            allow_redirects=True,
+            stream=False  # Disable streaming
+        )
+        
+        print(f"Response Status: {response.status_code}")
+        print(f"Response Content: {response.content}")
+        
+        return response.json()
+        
+    except requests.exceptions.ConnectionError as e:
+        print(f"Connection Error: {str(e)}")
+        raise
+    finally:
+        session.close()  # Ensure the session is closed
+
+
+
+import urllib3
+import json
+from urllib3.util.retry import Retry
+
+def create_indexer_alternative(self, name, datasource_name, index_name):
+    url = f"{self.endpoint}/indexers/{name}?api-version={self.api_version}"
+    
+    simple_payload = {
+        "name": name,
+        "dataSourceName": datasource_name,
+        "targetIndexName": index_name,
+        "fieldMappings": [
+            {
+                "sourceFieldName": "id",
+                "targetFieldName": "id"
+            }
+        ]
+    }
+    
+    # Create a pool manager with retry strategy
+    retry_strategy = Retry(
+        total=3,
+        backoff_factor=0.5
+    )
+    
+    http = urllib3.PoolManager(
+        retries=retry_strategy,
+        maxsize=1,
+        timeout=urllib3.Timeout(connect=5, read=30)
+    )
+    
+    try:
+        encoded_data = json.dumps(simple_payload).encode('utf-8')
+        
+        response = http.request(
+            'PUT',
+            url,
+            body=encoded_data,
+            headers=self.headers
+        )
+        
+        print(f"Response Status: {response.status}")
+        print(f"Response Data: {response.data}")
+        
+        return json.loads(response.data.decode('utf-8'))
+        
+    except Exception as e:
+        print(f"Error: {str(e)}")
+        raise
+    finally:
+        http.clear()
