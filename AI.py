@@ -1,3 +1,17 @@
+    payload = {
+        "name": name,
+        "type": "azureblob",
+        "credentials": {
+            "connectionString": f"ResourceId=/subscriptions/{subscription_id}/resourceGroups/{resource_group}/providers/Microsoft.Storage/storageAccounts/{storage_account_name}"
+        },
+        "container": {
+            "name": container_name
+        },
+        "identity": {
+            "type": "SystemAssigned"
+        }
+    }
+
 class AzureAISearchClient:
     def create_indexer(self, name, datasource_name, index_name):
         url = f"{self.endpoint}/indexers/{name}?api-version={self.api_version}"
