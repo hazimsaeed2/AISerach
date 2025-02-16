@@ -222,7 +222,18 @@ def create_indexer_alternative(self, name, datasource_name, index_name):
         http.clear()
 
 curl -X PUT "https://YOUR-SERVICE-NAME.search.windows.net/indexers/YOUR-INDEXER-NAME?api-version=2023-11-01" \
+     --http1.1 \
      -H "Content-Type: application/json" \
      -H "api-key: YOUR-ADMIN-KEY" \
-     -d '{"name":"YOUR-INDEXER-NAME","dataSourceName":"YOUR-DATASOURCE","targetIndexName":"YOUR-INDEX","fieldMappings":[{"sourceFieldName":"id","targetFieldName":"id"}]}'
+     -d '{"name":"YOUR-INDEXER-NAME","dataSourceName":"YOUR-DATASOURCE","targetIndexName":"YOUR-INDEX","fieldMappings":[{"sourceFieldName":"id","targetFieldName":"id"}]}' \
+     -v
 
+curl -X PUT "https://YOUR-SERVICE-NAME.search.windows.net/indexers/YOUR-INDEXER-NAME?api-version=2023-11-01" \
+     --http1.1 \
+     --retry 3 \
+     --retry-delay 2 \
+     --max-time 30 \
+     -H "Content-Type: application/json" \
+     -H "api-key: YOUR-ADMIN-KEY" \
+     -d '{"name":"YOUR-INDEXER-NAME","dataSourceName":"YOUR-DATASOURCE","targetIndexName":"YOUR-INDEX","fieldMappings":[{"sourceFieldName":"id","targetFieldName":"id"}]}' \
+     -v
