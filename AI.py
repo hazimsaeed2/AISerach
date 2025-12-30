@@ -432,3 +432,14 @@ curl -X PUT "https://YOUR-SERVICE-NAME.search.windows.net/indexers/YOUR-INDEXER-
      -H "api-key: YOUR-ADMIN-KEY" \
      -d '{"name":"YOUR-INDEXER-NAME","dataSourceName":"YOUR-DATASOURCE","targetIndexName":"YOUR-INDEX","fieldMappings":[{"sourceFieldName":"id","targetFieldName":"id"}]}' \
      -v
+
+Subject: Concourse Pricing Documentation – Progress Update
+Hi Steven,
+As we reach the deadline tomorrow, I wanted to share my progress and a recommendation on next steps.
+The attached PowerPoint and Excel file contain the full breakdown of Fee Type 1000 (Network Security Fee). I completed Subtype 1000 (ATM) and Subtype 2000 (POS) with all their rules and evaluation logic. Subtype 3001 (PPE) is still remaining. All of this was done manually – navigating the UI screen by screen, extracting each condition, and rebuilding the decision logic step by step.
+Based on this effort, scaling this approach across the full scope is not feasible. There are 90+ fee types, each with multiple subtypes and rules, creating thousands of decision paths. At the current pace, completing this manually would take well over a year.
+I reached out to more than 8 people and found the team that can export this from the database. They confirmed it cannot be done through the UI – a custom script would take them a couple of weeks to build.
+My recommendation: if we want to continue, we narrow the scope to only the fee types we care about, request those specific exports, and build the logic for that targeted subset.
+Let me know how you'd like to proceed.
+Thanks,
+Hazim
